@@ -110,8 +110,15 @@ void MemArena::UnmapFromMemoryRegion(void* view, size_t size)
     NOTICE_LOG_FMT(MEMMAP, "mmap failed");
 }
 
-// Windows PAGE_* constants mapped to POSIX PROT_* equivalents
-// PAGE_READONLY = 0x02, PAGE_READWRITE = 0x04
+// Linux implementation of VirtualProtectMemoryRegion
+// Maps Windows PAGE_* protection constants to POSIX PROT_* equivalents.
+// This is a compatibility shim for cross-platform code that uses Windows-style
+// memory protection flags. Ideally the codebase would use platform-agnostic
+// constants, but this provides Linux support for existing code.
+//
+// Supported flags:
+//   PAGE_READONLY  (0x02) -> PROT_READ
+//   PAGE_READWRITE (0x04) -> PROT_READ | PROT_WRITE
 bool MemArena::VirtualProtectMemoryRegion(void* data, size_t size, u32 flag)
 {
   int prot;

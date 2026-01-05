@@ -897,13 +897,16 @@ void CEXIBrawlback::NetplayThreadFunc()
   }
 #else
 #ifdef __linux__
-  // highest priority
-  int priority = 7;
+  // Set socket priority for QoS on Linux.
+  // Note: We use server->socket because ENet uses a single UDP socket on the host
+  // for all peer connections. ENetPeer doesn't have a socket member - the socket
+  // belongs to the ENetHost.
+  int priority = 7;  // highest priority
   setsockopt(this->server->socket, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(priority));
 #endif
 
   // https://www.tucny.com/Home/dscp-tos
-  // ef is better than cs7
+  // ef (0xb8) is better than cs7 for latency-sensitive traffic
   int tos_val = 0xb8;
   qos_success =
       setsockopt(this->server->socket, IPPROTO_IP, IP_TOS, &tos_val, sizeof(tos_val)) == 0;
